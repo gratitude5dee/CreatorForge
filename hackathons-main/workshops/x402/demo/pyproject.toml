@@ -1,0 +1,22 @@
+[project]
+name = "x402-workshop-demo"
+version = "0.1.0"
+description = "x402 workshop demo — FastAPI agent with PaymentMiddleware"
+authors = [
+    {name = "Nevermined"}
+]
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn>=0.30.0",
+    "payments-py[fastapi]>=1.3.0",
+    "openai>=1.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

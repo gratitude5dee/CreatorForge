@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "buyer-simple-agent"
+version = "0.1.0"
+description = "Data buying agent with x402 payment and budget management"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+strands-agents = {version = ">=1.0.0", extras = ["openai"]}
+payments-py = {version = ">=1.3.3", extras = ["a2a", "langchain"]}
+httpx = "^0.28.0"
+openai = "^1.40.0"
+python-dotenv = "^1.0.0"
+fastapi = "^0.120.0"
+uvicorn = ">=0.34.2,<1.0.0"
+sse-starlette = ">=2.0.0"
+boto3 = ">=1.35.0"
+langchain-openai = ">=0.3.0"
+langgraph = ">=0.3.0"
+
+[tool.poetry.extras]
+agentcore = ["bedrock-agentcore"]
+
+[tool.poetry.scripts]
+agent = "src.agent:main"
+agent-agentcore = "src.agent_agentcore:main"
+client = "src.client:main"
+demo = "src.demo:main"
+client-a2a = "src.client_a2a:main"
+web = "src.web:main"
+web-agentcore = "src.web_agentcore:main"
+agent-langgraph = "src.server_langgraph:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

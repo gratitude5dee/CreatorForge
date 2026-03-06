@@ -1,0 +1,23 @@
+name: cf-ceo
+display_name: CreatorForge CEO
+description: Top-level orchestrator for CreatorForge campaigns and procurement strategy
+type: orchestrator
+priority: 10
+
+capabilities:
+  - campaign-intake
+  - hierarchical-delegation
+  - mindra-orchestration
+  - audit-supervision
+
+folders:
+  expose: true
+  consume: true
+
+commands:
+  - name: /run-campaign
+    description: Orchestrate a full creative campaign workflow
+    usage: /run-campaign [brief]
+  - name: /run-procurement
+    description: Trigger procurement optimization cycle
+    usage: /run-procurement [objective]

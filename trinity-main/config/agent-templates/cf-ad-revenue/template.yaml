@@ -1,0 +1,19 @@
+name: cf-ad-revenue
+display_name: CreatorForge Ad Revenue Agent
+description: Integrates ZeroClick ad context into eligible creative outputs
+type: specialist
+priority: 30
+
+capabilities:
+  - zeroclick-context
+  - ad-attribution
+  - monetization-optimization
+
+folders:
+  expose: true
+  consume: true
+
+commands:
+  - name: /ad-enrich
+    description: Enrich creative with ZeroClick context
+    usage: /ad-enrich [brief]

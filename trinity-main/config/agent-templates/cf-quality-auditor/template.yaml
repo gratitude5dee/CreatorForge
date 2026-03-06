@@ -1,0 +1,19 @@
+name: cf-quality-auditor
+display_name: CreatorForge Quality Auditor
+description: Validates compliance, quality, and policy alignment before delivery
+type: specialist
+priority: 30
+
+capabilities:
+  - quality-evaluation
+  - compliance-checking
+  - release-gating
+
+folders:
+  expose: true
+  consume: true
+
+commands:
+  - name: /quality-audit
+    description: Run quality/compliance gate checks
+    usage: /quality-audit [asset]

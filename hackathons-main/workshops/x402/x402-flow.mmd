@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant B as Buyer
+    participant S as Seller
+    participant N as Nevermined
+
+    B->>S: 1. POST /ask (no token)
+    S-->>B: 2. 402 + payment-required
+
+    B->>N: 3. Request x402 token
+    N-->>B: 4. Access token
+
+    B->>S: 5. POST /ask + payment-signature
+    S->>N: 6. Verify
+    N-->>S: 7. Valid ✓
+    Note over S: Business logic
+    S->>N: 8. Settle
+    N-->>S: 9. Receipt
+    S-->>B: 10. 200 + payment-response

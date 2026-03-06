@@ -1,0 +1,14 @@
+name: cf-designer
+display_name: CreatorForge Designer
+description: Generates visual creative assets and image prompts
+type: specialist
+priority: 30
+
+capabilities:
+  - visual-concepting
+  - prompt-design
+  - asset-layout
+
+folders:
+  expose: true
+  consume: true

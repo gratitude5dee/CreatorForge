@@ -1,0 +1,28 @@
+graph TB
+    subgraph NVM["Nevermined Platform"]
+        direction TB
+        subgraph Services[" "]
+            direction LR
+            Plans["<b>Plans API</b><br/>create · subscribe · balance"]
+            Perms["<b>Permissions (x402)</b><br/>generate · verify · settle"]
+            Deleg["<b>Delegation Service</b><br/>create · validate card · charge"]
+        end
+        SC["<b>Smart Contracts (Base Chain)</b><br/>ERC-1155 Credits: mint / burn / transfer"]
+        Services --> SC
+    end
+
+    Seller["<b>Seller Agent</b><br/>middleware<br/>verify() · settle()"]
+    Buyer["<b>Buyer Agent</b><br/>SDK calls<br/>get_token()"]
+    Stripe["<b>Stripe (fiat)</b><br/>charge() → mint()"]
+
+    Seller --> Perms
+    Buyer --> Perms
+    Buyer --> Plans
+    Stripe --> Deleg
+    Deleg --> SC
+
+    style NVM fill:#f0f4ff,stroke:#334,stroke-width:2px
+    style SC fill:#e8f5e9,stroke:#2e7d32
+    style Seller fill:#fff3e0,stroke:#e65100
+    style Buyer fill:#e3f2fd,stroke:#1565c0
+    style Stripe fill:#fce4ec,stroke:#c62828

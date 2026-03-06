@@ -1,0 +1,20 @@
+name: cf-procurement-director
+display_name: CreatorForge Procurement Director
+description: Budget and ROI orchestrator for external service purchasing
+type: orchestrator
+priority: 20
+
+capabilities:
+  - budget-enforcement
+  - roi-optimization
+  - vendor-selection
+  - approval-gates
+
+folders:
+  expose: true
+  consume: true
+
+commands:
+  - name: /procure
+    description: Run a procurement cycle across candidate vendors
+    usage: /procure [objective]

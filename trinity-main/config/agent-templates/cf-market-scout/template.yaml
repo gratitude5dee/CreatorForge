@@ -1,0 +1,19 @@
+name: cf-market-scout
+display_name: CreatorForge Market Scout
+description: Discovers and purchases external data services for creative optimization
+type: specialist
+priority: 30
+
+capabilities:
+  - vendor-discovery
+  - paid-procurement
+  - signal-collection
+
+folders:
+  expose: true
+  consume: true
+
+commands:
+  - name: /vendor-scan
+    description: Discover and score external vendors
+    usage: /vendor-scan [objective]

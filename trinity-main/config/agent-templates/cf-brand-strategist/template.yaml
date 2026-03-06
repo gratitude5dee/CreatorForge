@@ -1,0 +1,14 @@
+name: cf-brand-strategist
+display_name: CreatorForge Brand Strategist
+description: Builds brand kits, positioning, and identity guidance
+type: specialist
+priority: 30
+
+capabilities:
+  - brand-positioning
+  - voice-definition
+  - identity-guidelines
+
+folders:
+  expose: true
+  consume: true

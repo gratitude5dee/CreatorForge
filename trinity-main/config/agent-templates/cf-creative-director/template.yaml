@@ -1,0 +1,20 @@
+name: cf-creative-director
+display_name: CreatorForge Creative Director
+description: Orchestrator of copy, design, brand, quality, and ad enrichment specialists
+type: orchestrator
+priority: 20
+
+capabilities:
+  - creative-orchestration
+  - specialist-delegation
+  - quality-gating
+  - ad-enrichment-routing
+
+folders:
+  expose: true
+  consume: true
+
+commands:
+  - name: /creative-build
+    description: Produce creative package from brief
+    usage: /creative-build [brief]

@@ -1,0 +1,48 @@
+services:
+  seller:
+    build: .
+    container_name: nvm-seller
+    stdin_open: true
+    tty: true
+    ports:
+      - "18789:18789"
+    networks:
+      - nvm-demo
+    env_file:
+      - .env
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - NVM_SELLER_API_KEY=${NVM_SELLER_API_KEY:-}
+      - NVM_PLAN_ID=${NVM_PLAN_ID:-}
+      - SYSTEM_PROMPT=${SYSTEM_PROMPT:-}
+    volumes:
+      - seller-config:/root/.openclaw
+    restart: unless-stopped
+
+  buyer:
+    build: .
+    container_name: nvm-buyer
+    entrypoint: ["/opt/openclaw/entrypoint-buyer.sh"]
+    stdin_open: true
+    tty: true
+    ports:
+      - "18790:18789"
+    networks:
+      - nvm-demo
+    env_file:
+      - .env
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+    volumes:
+      - buyer-config:/root/.openclaw
+    restart: unless-stopped
+
+volumes:
+  seller-config:
+  buyer-config:
+
+networks:
+  nvm-demo:
+    driver: bridge

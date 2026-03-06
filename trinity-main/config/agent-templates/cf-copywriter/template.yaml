@@ -1,0 +1,14 @@
+name: cf-copywriter
+display_name: CreatorForge Copywriter
+description: Generates ad copy, taglines, and CTA variants
+type: specialist
+priority: 30
+
+capabilities:
+  - ad-copy-generation
+  - tone-adaptation
+  - cta-optimization
+
+folders:
+  expose: true
+  consume: true

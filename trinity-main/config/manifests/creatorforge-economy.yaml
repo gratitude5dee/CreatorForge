@@ -1,0 +1,155 @@
+name: creatorforge
+description: CreatorForge autonomous creative asset economy
+
+prompt: |
+  You are part of the CreatorForge multi-agent economy.
+  Follow hierarchical delegation and maintain auditable trace IDs.
+  Never bypass budget controls or quality gates.
+
+default_tags:
+  - creatorforge
+  - production
+
+system_view:
+  name: CreatorForge Economy
+  icon: "🛠"
+  color: "#0F766E"
+  shared: true
+
+agents:
+  ceo:
+    template: local:cf-ceo
+    resources:
+      cpu: "2"
+      memory: "4g"
+    folders:
+      expose: true
+      consume: true
+    tags:
+      - role-ceo
+    schedules:
+      - name: campaign-sweep
+        cron: "0 */2 * * *"
+        message: "/run-campaign Run campaign triage and orchestration"
+        timezone: America/Los_Angeles
+
+  creative-director:
+    template: local:cf-creative-director
+    resources:
+      cpu: "2"
+      memory: "3g"
+    folders:
+      expose: true
+      consume: true
+    tags:
+      - role-creative-director
+
+  procurement-director:
+    template: local:cf-procurement-director
+    resources:
+      cpu: "2"
+      memory: "3g"
+    folders:
+      expose: true
+      consume: true
+    tags:
+      - role-procurement-director
+
+  copywriter:
+    template: local:cf-copywriter
+    resources:
+      cpu: "1"
+      memory: "2g"
+    folders:
+      expose: true
+      consume: true
+    tags:
+      - role-copywriter
+
+  designer:
+    template: local:cf-designer
+    resources:
+      cpu: "1"
+      memory: "2g"
+    folders:
+      expose: true
+      consume: true
+    tags:
+      - role-designer
+
+  brand-strategist:
+    template: local:cf-brand-strategist
+    resources:
+      cpu: "1"
+      memory: "2g"
+    folders:
+      expose: true
+      consume: true
+    tags:
+      - role-brand-strategist
+
+  market-scout:
+    template: local:cf-market-scout
+    resources:
+      cpu: "1"
+      memory: "2g"
+    folders:
+      expose: true
+      consume: true
+    tags:
+      - role-market-scout
+    schedules:
+      - name: vendor-re-score
+        cron: "0 */4 * * *"
+        message: "/vendor-scan Refresh vendor ROI scoring"
+        timezone: America/Los_Angeles
+
+  quality-auditor:
+    template: local:cf-quality-auditor
+    resources:
+      cpu: "1"
+      memory: "2g"
+    folders:
+      expose: true
+      consume: true
+    tags:
+      - role-quality-auditor
+    schedules:
+      - name: compliance-drift-audit
+        cron: "0 */6 * * *"
+        message: "/quality-audit Run periodic compliance drift audit"
+        timezone: America/Los_Angeles
+
+  ad-revenue:
+    template: local:cf-ad-revenue
+    resources:
+      cpu: "1"
+      memory: "2g"
+    folders:
+      expose: true
+      consume: true
+    tags:
+      - role-ad-revenue
+
+permissions:
+  explicit:
+    ceo:
+      - creative-director
+      - procurement-director
+    creative-director:
+      - copywriter
+      - designer
+      - brand-strategist
+      - quality-auditor
+      - ad-revenue
+    procurement-director:
+      - market-scout
+      - quality-auditor
+    copywriter: []
+    designer: []
+    brand-strategist: []
+    market-scout: []
+    quality-auditor: []
+    ad-revenue: []
+
+auto_start: true
