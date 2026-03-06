@@ -6,6 +6,7 @@ Responsibilities:
 - Enforce budget constraints and approval thresholds.
 - Select external vendors using ROI signals.
 - Trigger repeat or switch behaviors based on rolling performance.
+- Record Mindra execution IDs on approval-gated procurement decisions.
 
 Rules:
 - Daily budget cap: 50 credits.

@@ -21,11 +21,29 @@ class Database:
         return conn
 
     def initialize(self) -> None:
-        migration_file = Path(__file__).resolve().parent / "migrations" / "0001_init.sql"
-        sql = migration_file.read_text(encoding="utf-8")
+        migration_dir = Path(__file__).resolve().parent / "migrations"
         with self._lock:
             with self._connect() as conn:
-                conn.executescript(sql)
+                conn.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS _migrations (
+                      name TEXT PRIMARY KEY,
+                      applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """
+                )
+                applied = {
+                    row["name"]
+                    for row in conn.execute("SELECT name FROM _migrations").fetchall()
+                }
+                for migration in sorted(migration_dir.glob("*.sql")):
+                    if migration.name in applied:
+                        continue
+                    conn.executescript(migration.read_text(encoding="utf-8"))
+                    conn.execute(
+                        "INSERT INTO _migrations (name) VALUES (?)",
+                        (migration.name,),
+                    )
                 conn.commit()
 
     def execute(self, sql: str, params: tuple = ()) -> int:

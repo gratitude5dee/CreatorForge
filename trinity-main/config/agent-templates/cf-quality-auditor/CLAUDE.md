@@ -6,3 +6,4 @@ Rules:
 - Score outputs for quality and compliance.
 - Reject or flag assets that fail policy thresholds.
 - Emit explicit reason codes for non-passing outputs.
+- Delivery must stop on non-pass results.

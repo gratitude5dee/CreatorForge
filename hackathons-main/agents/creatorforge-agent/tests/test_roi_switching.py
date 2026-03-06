@@ -24,3 +24,20 @@ def test_vendor_selector_repeat_precedence():
     action, reason = selector.select(current=current, candidates=candidates, cap_ok=True)
     assert action == "repeat"
     assert "repeat vendor" in reason
+
+
+def test_vendor_selector_switch():
+    selector = VendorSelector()
+    current = VendorState("v1", rolling_roi=3.2, forecast_roi=3.2, recent_samples=3, last_success=True)
+    candidates = [current, VendorState("v2", rolling_roi=6.0, forecast_roi=6.0, recent_samples=1, last_success=True)]
+    action, reason = selector.select(current=current, candidates=candidates, cap_ok=True)
+    assert action == "switch"
+    assert "switch from v1" in reason
+
+
+def test_vendor_selector_does_not_switch_to_self():
+    selector = VendorSelector()
+    current = VendorState("v1", rolling_roi=3.2, forecast_roi=7.5, recent_samples=3, last_success=True)
+    action, reason = selector.select(current=current, candidates=[current], cap_ok=True)
+    assert action == "hold"
+    assert "hold current vendor" in reason

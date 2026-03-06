@@ -8,4 +8,5 @@ Deliverables:
 
 Rules:
 - Optimize for clarity and conversion intent.
+- If sponsor context exists, reflect it naturally in prompt direction and placement guidance.
 - Preserve brand consistency across generated visuals.

@@ -33,8 +33,10 @@ def build_creatorforge_agent_card(
         for name in BASE_CREDITS
     ]
 
-    cost_description = "Credits vary by service: " + ", ".join(
-        [f"{name}={credits}" for name, credits in BASE_CREDITS.items()]
+    cost_description = (
+        "Dynamic credits with Nevermined x402 settlement. "
+        + ", ".join([f"{name}={credits}" for name, credits in BASE_CREDITS.items()])
+        + ". Repeat buyers receive a 10% discount. Campaign requests may surge during peak demand."
     )
     base_card = {
         "name": "CreatorForge Agent",

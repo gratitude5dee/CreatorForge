@@ -27,13 +27,16 @@ class VendorSelector:
         if current is None:
             return "buy_new", f"selected best forecast vendor {best.vendor_id}"
 
+        alternates = [candidate for candidate in candidates if candidate.vendor_id != current.vendor_id]
+        best_alternate = max(alternates, key=lambda c: c.forecast_roi) if alternates else None
+
         if should_repeat(current.rolling_roi, current.last_success, cap_ok):
             return "repeat", f"repeat vendor {current.vendor_id} due to rolling ROI {current.rolling_roi}"
 
-        if should_switch(current.rolling_roi, best.forecast_roi, current.recent_samples):
+        if best_alternate and should_switch(current.rolling_roi, best_alternate.forecast_roi, current.recent_samples):
             return "switch", (
                 f"switch from {current.vendor_id} (rolling ROI {current.rolling_roi}) "
-                f"to {best.vendor_id} (forecast {best.forecast_roi})"
+                f"to {best_alternate.vendor_id} (forecast {best_alternate.forecast_roi})"
             )
 
         return "hold", f"hold current vendor {current.vendor_id}; no switch/repeat condition met"

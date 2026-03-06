@@ -5,12 +5,13 @@ Production-oriented CreatorForge implementation for the Nevermined autonomous bu
 ## Features
 
 - 8-agent hierarchy (CEO, directors, specialists)
+- Strands-style specialist tools with LangGraph-backed orchestration
 - Seller APIs for 5 creative products
 - Procurement APIs with budget/ROI/repeat/switch logic
 - Human approval workflow for high-value purchases
 - SQLite persistence and immutable audit events
-- Nevermined x402 verify/settle integration
-- Mindra orchestration integration (live)
+- Nevermined `PaymentMiddleware` with dynamic route credits
+- Mindra workflow + SSE orchestration integration (live)
 - ZeroClick ad-context and attribution integration (live)
 - Trinity deployment artifacts via system manifest (in `trinity-main`)
 
@@ -44,9 +45,12 @@ Server starts on `http://localhost:3010` by default.
 - `GET /v1/procurement/decisions/{decision_id}`
 - `GET /v1/approvals/pending`
 - `POST /v1/approvals/{approval_id}/decision`
+- `POST /v1/ad-events/attribution`
 
 ## Notes
 
 - No mock fallback mode is provided for Mindra/ZeroClick in production paths.
 - Ad-enriched generation fails if ZeroClick context cannot be retrieved.
+- Ad context is fetched before generation and logged through the attribution funnel.
+- Mindra requires `MINDRA_BASE_URL`, creative/procurement workflow slugs, and `MINDRA_API_KEY`.
 - High-value procurement actions above 10 credits require approval.

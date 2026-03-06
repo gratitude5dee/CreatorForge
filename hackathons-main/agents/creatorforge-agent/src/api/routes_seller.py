@@ -2,21 +2,14 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
-from .models import CreativeAssetRequest, CreativeAssetResponse, ServiceName
+from .models import AdAttributionCallback, CreativeAssetRequest, CreativeAssetResponse, QualityGateFailure, ServiceName
 from ..payments.a2a_server import build_creatorforge_agent_card
 
 router = APIRouter(tags=["seller"])
-
-
-def _is_peak_demand() -> bool:
-    hour = datetime.utcnow().hour
-    return 0 <= hour <= 2  # simple deterministic window for surge pricing demo
-
 
 async def _handle_service(service: ServiceName, req: CreativeAssetRequest, request: Request) -> CreativeAssetResponse:
     c = request.app.state.container
@@ -27,11 +20,16 @@ async def _handle_service(service: ServiceName, req: CreativeAssetRequest, reque
         service=service,
         buyer_id=req.buyer_id,
         repeat_buyer=repeat_buyer,
-        peak_demand=_is_peak_demand(),
+        peak_demand=c.pricing._is_peak_window(),
     )
 
-    verification = await c.x402.require_and_verify(request=request, endpoint=request.url.path)
-    c.repo.record_audit_event(trace_id, "ceo", "request_received", {"service": service, "buyer": req.buyer_id})
+    c.repo.record_audit_event(
+        trace_id,
+        "ceo",
+        "request_received",
+        {"service": service, "buyer": req.buyer_id},
+        idempotency_key=f"audit:request:{trace_id}",
+    )
 
     campaign_id = c.repo.create_campaign(
         trace_id=trace_id,
@@ -39,54 +37,69 @@ async def _handle_service(service: ServiceName, req: CreativeAssetRequest, reque
         buyer_id=req.buyer_id,
         brief=req.brief,
     )
+    c.repo.update_campaign_status(campaign_id, "generating")
 
-    content, quality, ad_context = c.ceo.generate_asset(service, req, trace_id)
-    if service == "ad-enriched" and not ad_context:
+    result = c.ceo.generate_asset(service, req, trace_id)
+    if service == "ad-enriched" and not result.ad_context:
+        c.repo.update_campaign_status(campaign_id, "rejected", "missing ZeroClick context")
         raise HTTPException(status_code=502, detail="ad-enriched service requires ZeroClick context")
+
+    passed, quality, rejection_reason = c.ceo.creative_director.auditor.gate(result.content)
+    if not passed:
+        c.repo.update_campaign_status(campaign_id, "rejected", rejection_reason)
+        c.repo.record_audit_event(
+            trace_id,
+            "quality-auditor",
+            "quality_gate_rejected",
+            {"reason": rejection_reason, "quality": quality},
+            idempotency_key=f"audit:quality-rejected:{trace_id}",
+        )
+        raise HTTPException(
+            status_code=422,
+            detail=QualityGateFailure(
+                trace_id=trace_id,
+                campaign_id=campaign_id,
+                service=service,
+                quality=quality,
+                reason=rejection_reason or "quality gate failed",
+            ).model_dump(),
+        )
 
     asset_id = c.repo.create_creative_asset(
         campaign_id=campaign_id,
         trace_id=trace_id,
         service=service,
-        content=content,
+        content=result.content,
         quality=quality,
-        ad_context=ad_context,
+        ad_context=result.ad_context,
+        provenance={"mindra_execution_id": result.mindra_execution_id, "mindra_status": result.mindra_status},
     )
-
-    settlement = await c.x402.settle(
-        token=verification["token"],
-        endpoint=request.url.path,
-        agent_request_id=verification.get("agent_request_id"),
+    if service == "ad-enriched" and result.ad_context:
+        c.ceo.creative_director.ad_agent.mark_included(trace_id, result.ad_context)
+    c.repo.update_campaign_status(campaign_id, "delivered")
+    c.repo.record_audit_event(
+        trace_id,
+        "quality-auditor",
+        "quality_scored",
+        quality,
+        idempotency_key=f"audit:quality:{trace_id}",
     )
-
-    c.repo.record_sale(
-        trace_id=trace_id,
-        buyer_id=req.buyer_id,
-        service=service,
-        credits=quote.settlement_credits,
-        settlement=settlement,
-    )
-    c.repo.record_budget_entry(
-        trace_id=trace_id,
-        vendor_id=req.buyer_id,
-        credits=quote.settlement_credits,
-        direction="sell",
-        note=f"sold {service}",
-    )
-    c.repo.record_audit_event(trace_id, "quality-auditor", "quality_scored", quality)
-
-    if ad_context:
-        c.repo.record_ad_event(trace_id, "included", "zeroclick", ad_context)
+    request.state.sale_context = {
+        "trace_id": trace_id,
+        "buyer_id": req.buyer_id,
+        "service": service,
+        "credits": quote.settlement_credits,
+    }
 
     return CreativeAssetResponse(
         asset_id=asset_id,
         trace_id=trace_id,
         service=service,
-        content=content,
+        content=result.content,
         quote=quote,
         quality=quality,
-        settlement=settlement,
-        ad_context=ad_context,
+        settlement={},
+        ad_context=result.ad_context,
     )
 
 
@@ -121,7 +134,12 @@ async def pricing(request: Request, buyer_id: str = Query(default="anonymous")):
     repeat_buyer = c.repo.buyer_sale_count(buyer_id) > 0
     slots = c.zeroclick.fetch_marketplace_slots("creative-assets")
     tiers = {
-        name: c.pricing.quote(name, buyer_id=buyer_id, repeat_buyer=repeat_buyer, peak_demand=_is_peak_demand()).model_dump()
+        name: c.pricing.quote(
+            name,
+            buyer_id=buyer_id,
+            repeat_buyer=repeat_buyer,
+            peak_demand=c.pricing._is_peak_window(),
+        ).model_dump()
         for name in ["ad-copy", "visual", "brand-kit", "campaign", "ad-enriched"]
     }
     return {
@@ -151,3 +169,13 @@ async def health():
 @router.get("/stats")
 async def stats(request: Request):
     return request.app.state.container.repo.get_stats()
+
+
+@router.post("/v1/ad-events/attribution")
+async def attribution(event: AdAttributionCallback, request: Request):
+    request.app.state.container.ceo.creative_director.ad_agent.track_callback(
+        trace_id=event.trace_id,
+        event=event.event,
+        payload=event.payload,
+    )
+    return {"status": "recorded", "trace_id": event.trace_id, "event": event.event}

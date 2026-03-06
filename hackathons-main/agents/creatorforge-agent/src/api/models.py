@@ -44,6 +44,16 @@ class CreativeAssetResponse(BaseModel):
     quality: dict[str, Any]
     settlement: dict[str, Any]
     ad_context: dict[str, Any] | None = None
+    campaign_status: Literal["delivered"] = "delivered"
+
+
+class QualityGateFailure(BaseModel):
+    trace_id: str
+    campaign_id: int
+    service: ServiceName
+    quality: dict[str, Any]
+    reason: str
+    campaign_status: Literal["rejected"] = "rejected"
 
 
 class VendorCandidate(BaseModel):
@@ -59,7 +69,7 @@ class VendorCandidate(BaseModel):
 class ProcurementRunRequest(BaseModel):
     objective: str
     trace_id: str | None = None
-    vendors: list[VendorCandidate]
+    vendors: list[VendorCandidate] = Field(..., min_length=1)
     auto_approve: bool = False
 
 
@@ -81,6 +91,8 @@ class ProcurementDecision(BaseModel):
     roi_score: float | None = None
     alternate_forecast: float | None = None
     approval_request_id: int | None = None
+    mindra_execution_id: str | None = None
+    mindra_approval_id: str | None = None
 
 
 class ProcurementRunResponse(BaseModel):
@@ -97,12 +109,15 @@ class ApprovalRequest(BaseModel):
     status: Literal["pending", "approved", "rejected"]
     reason: str
     requested_at: datetime
+    mindra_execution_id: str | None = None
+    mindra_approval_id: str | None = None
 
 
 class ApprovalDecision(BaseModel):
     approved: bool
     reviewer: str
     note: str | None = None
+    reason: str | None = None
 
 
 class AuditEvent(BaseModel):
@@ -129,3 +144,10 @@ class AdAttributionEvent(BaseModel):
     provider: str = "zeroclick"
     payload: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime
+
+
+class AdAttributionCallback(BaseModel):
+    trace_id: str = Field(..., min_length=1)
+    event: Literal["clicked", "converted"]
+    payload: dict[str, Any] = Field(default_factory=dict)
+    provider: str = "zeroclick"

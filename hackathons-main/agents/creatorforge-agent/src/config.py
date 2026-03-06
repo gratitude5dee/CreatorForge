@@ -23,9 +23,12 @@ class Settings:
     nvm_agent_id: str
     nvm_base_url: str
 
-    mindra_api_url: str
+    mindra_base_url: str
     mindra_api_key: str
-    mindra_timeout_seconds: int
+    mindra_workflow_slug_creative: str
+    mindra_workflow_slug_procurement: str
+    mindra_connect_timeout_seconds: int
+    mindra_read_timeout_seconds: int
 
     zeroclick_api_url: str
     zeroclick_api_key: str
@@ -36,6 +39,7 @@ class Settings:
     approval_threshold: int
 
     default_buyer_id: str
+    trinity_mcp_api_key: str | None
 
 
 _REQUIRED_FIELDS = (
@@ -43,8 +47,10 @@ _REQUIRED_FIELDS = (
     "NVM_API_KEY",
     "NVM_PLAN_ID",
     "NVM_AGENT_ID",
-    "MINDRA_API_URL",
+    "MINDRA_BASE_URL",
     "MINDRA_API_KEY",
+    "MINDRA_WORKFLOW_SLUG_CREATIVE",
+    "MINDRA_WORKFLOW_SLUG_PROCUREMENT",
     "ZEROCLICK_API_URL",
     "ZEROCLICK_API_KEY",
 )
@@ -75,9 +81,12 @@ def load_settings() -> Settings:
         nvm_plan_id=_require("NVM_PLAN_ID"),
         nvm_agent_id=_require("NVM_AGENT_ID"),
         nvm_base_url=os.getenv("NVM_BASE_URL", "http://localhost:3010"),
-        mindra_api_url=_require("MINDRA_API_URL"),
+        mindra_base_url=_require("MINDRA_BASE_URL"),
         mindra_api_key=_require("MINDRA_API_KEY"),
-        mindra_timeout_seconds=int(os.getenv("MINDRA_TIMEOUT_SECONDS", "30")),
+        mindra_workflow_slug_creative=_require("MINDRA_WORKFLOW_SLUG_CREATIVE"),
+        mindra_workflow_slug_procurement=_require("MINDRA_WORKFLOW_SLUG_PROCUREMENT"),
+        mindra_connect_timeout_seconds=int(os.getenv("MINDRA_CONNECT_TIMEOUT_SECONDS", "10")),
+        mindra_read_timeout_seconds=int(os.getenv("MINDRA_READ_TIMEOUT_SECONDS", "60")),
         zeroclick_api_url=_require("ZEROCLICK_API_URL"),
         zeroclick_api_key=_require("ZEROCLICK_API_KEY"),
         zeroclick_timeout_seconds=int(os.getenv("ZEROCLICK_TIMEOUT_SECONDS", "20")),
@@ -85,4 +94,5 @@ def load_settings() -> Settings:
         budget_vendor_cap=int(os.getenv("BUDGET_VENDOR_CAP", "20")),
         approval_threshold=int(os.getenv("APPROVAL_THRESHOLD", "10")),
         default_buyer_id=os.getenv("DEFAULT_BUYER_ID", "anonymous"),
+        trinity_mcp_api_key=os.getenv("TRINITY_MCP_API_KEY"),
     )

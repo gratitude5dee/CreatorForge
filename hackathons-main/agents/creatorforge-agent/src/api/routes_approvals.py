@@ -25,6 +25,8 @@ async def pending(request: Request):
                 status=row["status"],
                 reason=row["reason"],
                 requested_at=datetime.fromisoformat(row["created_at"]),
+                mindra_execution_id=row.get("mindra_execution_id"),
+                mindra_approval_id=row.get("mindra_approval_id"),
             )
         )
     return result
@@ -32,7 +34,8 @@ async def pending(request: Request):
 
 @router.post("/{approval_id}/decision")
 async def decide(approval_id: int, decision: ApprovalDecision, request: Request):
-    repo = request.app.state.container.repo
+    container = request.app.state.container
+    repo = container.repo
     current = repo.get_approval(approval_id)
     if not current:
         raise HTTPException(status_code=404, detail="approval not found")
@@ -45,10 +48,24 @@ async def decide(approval_id: int, decision: ApprovalDecision, request: Request)
         reviewer=decision.reviewer,
         note=decision.note,
     )
+    if current.get("mindra_execution_id") and current.get("mindra_approval_id"):
+        if decision.approved:
+            container.mindra.approve_execution(
+                current["mindra_execution_id"],
+                current["mindra_approval_id"],
+                decision.reason or decision.note,
+            )
+        else:
+            container.mindra.reject_execution(
+                current["mindra_execution_id"],
+                current["mindra_approval_id"],
+                decision.reason or decision.note,
+            )
     repo.record_audit_event(
         current["trace_id"],
         "human-approval",
         "approval_decision",
         {"approval_id": approval_id, "approved": decision.approved, "reviewer": decision.reviewer},
+        idempotency_key=f"audit:approval:{approval_id}",
     )
     return {"approval_id": approval_id, "status": "approved" if decision.approved else "rejected"}

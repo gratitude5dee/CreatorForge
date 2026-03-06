@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .tooling import strands_tool
+
 
 class QualityAuditorAgent:
     """Deterministic validator for quality/compliance scoring."""
@@ -16,3 +18,20 @@ class QualityAuditorAgent:
             "compliance_score": compliance,
             "status": status,
         }
+
+    def gate(self, content: dict) -> tuple[bool, dict, str | None]:
+        quality = self.run(content)
+        if quality["status"] == "pass":
+            return True, quality, None
+        reason = (
+            f"quality gate failed with quality={quality['quality_score']} "
+            f"and compliance={quality['compliance_score']}"
+        )
+        return False, quality, reason
+
+    def as_tool(self):
+        @strands_tool
+        def audit_creative_output(content: dict) -> dict:
+            return self.run(content)
+
+        return audit_creative_output

@@ -62,3 +62,21 @@ class PricingPolicy:
             modifiers=modifiers,
             generated_at=datetime.now(timezone.utc),
         )
+
+    def quote_from_payload(
+        self,
+        service: ServiceName,
+        payload: dict,
+        repeat_buyer: bool,
+    ) -> PricingQuote:
+        return self.quote(
+            service=service,
+            buyer_id=str(payload.get("buyer_id", "anonymous")),
+            repeat_buyer=repeat_buyer,
+            peak_demand=service == "campaign" and self._is_peak_window(),
+        )
+
+    @staticmethod
+    def _is_peak_window() -> bool:
+        hour = datetime.now(timezone.utc).hour
+        return 0 <= hour <= 2

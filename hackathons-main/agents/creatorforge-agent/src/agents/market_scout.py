@@ -6,6 +6,7 @@ import httpx
 
 from ..api.models import VendorCandidate
 from ..integrations.nevermined_client import NeverminedClient
+from .tooling import strands_tool
 
 
 class MarketScoutAgent:
@@ -44,3 +45,19 @@ class MarketScoutAgent:
         latency_score = max(1.0, min(10.0, round(10.0 - (latency_ms / 250.0), 2)))
         cost_efficiency = max(1.0, min(10.0, round(11.0 - expected_credits, 2)))
         return quality, compliance, latency_score, cost_efficiency
+
+    def as_tool(self):
+        @strands_tool
+        def purchase_external_signal(endpoint: str, plan_id: str, agent_id: str, vendor_id: str, vendor_name: str, query: str) -> dict:
+            vendor = VendorCandidate(
+                vendor_id=vendor_id,
+                vendor_name=vendor_name,
+                endpoint=endpoint,
+                plan_id=plan_id,
+                agent_id=agent_id,
+                query=query,
+            )
+            body, credits = self.purchase(vendor)
+            return {"body": body, "credits_used": credits}
+
+        return purchase_external_signal

@@ -27,3 +27,14 @@ def test_peak_demand_surcharge_campaign_only():
     assert campaign_quote.settlement_credits == 12
     assert any(m.name == "peak-demand-surcharge" for m in campaign_quote.modifiers)
     assert ad_copy_quote.settlement_credits == 1
+
+
+def test_quote_from_payload_uses_buyer_id():
+    policy = PricingPolicy()
+    quote = policy.quote_from_payload(
+        "brand-kit",
+        {"buyer_id": "buyer-123"},
+        repeat_buyer=True,
+    )
+    assert quote.buyer_id == "buyer-123"
+    assert quote.settlement_credits == 4

@@ -6,3 +6,4 @@ Rules:
 - Request live ad context for relevant outputs.
 - Track attribution funnel states: considered, included, clicked, converted.
 - Return structured ad metadata for downstream analytics.
+- Context retrieval must happen before ad-enriched copy generation, not after.

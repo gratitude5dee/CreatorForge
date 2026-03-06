@@ -7,6 +7,19 @@ This guide deploys the CreatorForge hierarchy using existing Trinity system-mani
 - Templates: `config/agent-templates/cf-*`
 - Manifest: `config/manifests/creatorforge-economy.yaml`
 
+## Required environment
+
+- `TRINITY_MCP_API_KEY`
+- `MINDRA_BASE_URL`
+- `MINDRA_WORKFLOW_SLUG_CREATIVE`
+- `MINDRA_WORKFLOW_SLUG_PROCUREMENT`
+- `MINDRA_API_KEY`
+- `NVM_API_KEY`
+- `NVM_PLAN_ID`
+- `NVM_AGENT_ID`
+- `ZEROCLICK_API_URL`
+- `ZEROCLICK_API_KEY`
+
 ## Deploy
 
 ```bash
@@ -55,3 +68,5 @@ curl -s "http://localhost:8000/api/systems/creatorforge/manifest" \
 - Permissions are explicit hierarchy (not full mesh).
 - Default tags include `creatorforge` and `production`.
 - Use Trinity dashboards/logs plus CreatorForge SQLite audit events as evidence for judging.
+- Verify Mindra workflow slugs are configured before deploy; the CEO and Procurement Director depend on workflow-run plus SSE streaming, not the deprecated orchestrate endpoint.
+- Capture evidence for first paid transaction, repeat buyer discount, vendor switch, and one full ad attribution chain.

@@ -16,15 +16,20 @@ async def run_procurement(req: ProcurementRunRequest, request: Request):
     trace_id = req.trace_id or str(uuid4())
     c = request.app.state.container
 
-    decisions, pending = c.ceo.run_procurement(trace_id, req)
+    result = c.ceo.run_procurement(trace_id, req)
     c.repo.record_audit_event(
         trace_id,
         "procurement-director",
         "procurement_run",
-        {"decisions": [d.model_dump() for d in decisions], "pending": pending},
+        {"decisions": [d.model_dump() for d in result.decisions], "pending": result.pending_approvals},
+        idempotency_key=f"audit:procurement:{trace_id}",
     )
 
-    return ProcurementRunResponse(trace_id=trace_id, decisions=decisions, pending_approvals=pending)
+    return ProcurementRunResponse(
+        trace_id=trace_id,
+        decisions=result.decisions,
+        pending_approvals=result.pending_approvals,
+    )
 
 
 @router.get("/vendors")
