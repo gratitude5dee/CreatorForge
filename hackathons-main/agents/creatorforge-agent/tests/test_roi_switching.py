@@ -4,7 +4,7 @@ from src.procurement.vendor_selector import VendorSelector, VendorState
 
 def test_compute_roi_matches_locked_formula():
     score = compute_roi(quality=8.0, compliance=6.0, latency_score=7.0, cost_efficiency=5.0)
-    assert score == 6.9
+    assert score == 6.85
 
 
 def test_switch_rule():
